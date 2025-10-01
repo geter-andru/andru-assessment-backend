@@ -1,0 +1,33 @@
+{"level":"info","message":"Andru Assessment API server running on port 3001","service":"andru-assessment-api","timestamp":"2025-09-30 12:09:02"}
+{"level":"info","message":"Environment: test","service":"andru-assessment-api","timestamp":"2025-09-30 12:09:02"}
+{"level":"info","message":"Health check performed","responseTime":1,"service":"health-check","status":"healthy","timestamp":"2025-09-30 12:09:02"}
+{"level":"info","message":"::ffff:127.0.0.1 - - [30/Sep/2025:19:09:02 +0000] \"GET /api/health HTTP/1.1\" 200 199 \"-\" \"-\"","service":"andru-assessment-api","timestamp":"2025-09-30 12:09:02"}
+{"level":"info","message":"::ffff:127.0.0.1 - - [30/Sep/2025:19:09:02 +0000] \"GET / HTTP/1.1\" 200 71 \"-\" \"-\"","service":"andru-assessment-api","timestamp":"2025-09-30 12:09:02"}
+{"level":"info","message":"Health check performed","responseTime":0,"service":"health-check","status":"healthy","timestamp":"2025-09-30 12:17:04"}
+{"level":"info","message":"::ffff:127.0.0.1 - - [30/Sep/2025:19:17:04 +0000] \"GET /api/health HTTP/1.1\" 200 199 \"-\" \"-\"","service":"andru-assessment-api","timestamp":"2025-09-30 12:17:04"}
+{"level":"info","message":"::ffff:127.0.0.1 - - [30/Sep/2025:19:17:04 +0000] \"GET / HTTP/1.1\" 200 71 \"-\" \"-\"","service":"andru-assessment-api","timestamp":"2025-09-30 12:17:04"}
+{"level":"info","message":"Health check performed","responseTime":0,"service":"health-check","status":"healthy","timestamp":"2025-09-30 12:17:17"}
+{"level":"info","message":"::ffff:127.0.0.1 - - [30/Sep/2025:19:17:17 +0000] \"GET /api/health HTTP/1.1\" 200 199 \"-\" \"-\"","service":"andru-assessment-api","timestamp":"2025-09-30 12:17:17"}
+{"level":"info","message":"::ffff:127.0.0.1 - - [30/Sep/2025:19:17:17 +0000] \"GET / HTTP/1.1\" 200 71 \"-\" \"-\"","service":"andru-assessment-api","timestamp":"2025-09-30 12:17:17"}
+{"level":"info","message":"Health check performed","responseTime":0,"service":"health-check","status":"healthy","timestamp":"2025-09-30 12:18:26"}
+{"level":"info","message":"::ffff:127.0.0.1 - - [30/Sep/2025:19:18:26 +0000] \"GET /api/health HTTP/1.1\" 200 199 \"-\" \"-\"","service":"andru-assessment-api","timestamp":"2025-09-30 12:18:26"}
+{"level":"info","message":"::ffff:127.0.0.1 - - [30/Sep/2025:19:18:26 +0000] \"GET / HTTP/1.1\" 200 71 \"-\" \"-\"","service":"andru-assessment-api","timestamp":"2025-09-30 12:18:26"}
+{"level":"info","message":"::ffff:127.0.0.1 - - [30/Sep/2025:20:39:57 +0000] \"GET / HTTP/1.1\" 200 71 \"-\" \"-\"","service":"andru-assessment-api","timestamp":"2025-09-30 13:39:57"}
+{"level":"info","message":"Health check performed","responseTime":0,"service":"health-check","status":"healthy","timestamp":"2025-09-30 13:49:34"}
+{"level":"info","message":"::ffff:127.0.0.1 - - [30/Sep/2025:20:49:34 +0000] \"GET /api/health HTTP/1.1\" 200 199 \"-\" \"-\"","service":"andru-assessment-api","timestamp":"2025-09-30 13:49:34"}
+{"level":"info","message":"::ffff:127.0.0.1 - - [30/Sep/2025:20:49:34 +0000] \"GET / HTTP/1.1\" 200 71 \"-\" \"-\"","service":"andru-assessment-api","timestamp":"2025-09-30 13:49:34"}
+{"level":"info","message":"Health check performed","responseTime":0,"service":"health-check","status":"healthy","timestamp":"2025-09-30 13:54:57"}
+{"level":"info","message":"::ffff:127.0.0.1 - - [30/Sep/2025:20:54:57 +0000] \"GET /api/health HTTP/1.1\" 200 199 \"-\" \"-\"","service":"andru-assessment-api","timestamp":"2025-09-30 13:54:57"}
+{"level":"info","message":"::ffff:127.0.0.1 - - [30/Sep/2025:20:54:57 +0000] \"GET / HTTP/1.1\" 200 71 \"-\" \"-\"","service":"andru-assessment-api","timestamp":"2025-09-30 13:54:57"}
+{"level":"info","message":"Health check performed","responseTime":0,"service":"health-check","status":"healthy","timestamp":"2025-09-30 14:18:16"}
+{"level":"info","message":"::ffff:127.0.0.1 - - [30/Sep/2025:21:18:16 +0000] \"GET /api/health HTTP/1.1\" 200 199 \"-\" \"-\"","service":"andru-assessment-api","timestamp":"2025-09-30 14:18:16"}
+{"level":"info","message":"::ffff:127.0.0.1 - - [30/Sep/2025:21:18:16 +0000] \"GET / HTTP/1.1\" 200 71 \"-\" \"-\"","service":"andru-assessment-api","timestamp":"2025-09-30 14:18:16"}
+{"level":"info","message":"Health check performed","responseTime":0,"service":"health-check","status":"healthy","timestamp":"2025-09-30 17:22:16"}
+{"level":"info","message":"::ffff:127.0.0.1 - - [01/Oct/2025:00:22:16 +0000] \"GET /api/health HTTP/1.1\" 200 199 \"-\" \"-\"","service":"andru-assessment-api","timestamp":"2025-09-30 17:22:16"}
+{"level":"info","message":"::ffff:127.0.0.1 - - [01/Oct/2025:00:22:16 +0000] \"GET / HTTP/1.1\" 200 71 \"-\" \"-\"","service":"andru-assessment-api","timestamp":"2025-09-30 17:22:16"}
+{"level":"info","message":"Health check performed","responseTime":0,"service":"health-check","status":"healthy","timestamp":"2025-09-30 17:23:24"}
+{"level":"info","message":"::ffff:127.0.0.1 - - [01/Oct/2025:00:23:24 +0000] \"GET /api/health HTTP/1.1\" 200 196 \"-\" \"-\"","service":"andru-assessment-api","timestamp":"2025-09-30 17:23:24"}
+{"level":"info","message":"::ffff:127.0.0.1 - - [01/Oct/2025:00:23:24 +0000] \"GET / HTTP/1.1\" 200 71 \"-\" \"-\"","service":"andru-assessment-api","timestamp":"2025-09-30 17:23:24"}
+{"level":"info","message":"Health check performed","responseTime":0,"service":"health-check","status":"healthy","timestamp":"2025-09-30 17:24:34"}
+{"level":"info","message":"::ffff:127.0.0.1 - - [01/Oct/2025:00:24:34 +0000] \"GET /api/health HTTP/1.1\" 200 199 \"-\" \"-\"","service":"andru-assessment-api","timestamp":"2025-09-30 17:24:34"}
+{"level":"info","message":"::ffff:127.0.0.1 - - [01/Oct/2025:00:24:34 +0000] \"GET / HTTP/1.1\" 200 71 \"-\" \"-\"","service":"andru-assessment-api","timestamp":"2025-09-30 17:24:34"}
