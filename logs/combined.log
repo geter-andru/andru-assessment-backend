@@ -31,3 +31,13 @@
 {"level":"info","message":"Health check performed","responseTime":0,"service":"health-check","status":"healthy","timestamp":"2025-09-30 17:24:34"}
 {"level":"info","message":"::ffff:127.0.0.1 - - [01/Oct/2025:00:24:34 +0000] \"GET /api/health HTTP/1.1\" 200 199 \"-\" \"-\"","service":"andru-assessment-api","timestamp":"2025-09-30 17:24:34"}
 {"level":"info","message":"::ffff:127.0.0.1 - - [01/Oct/2025:00:24:34 +0000] \"GET / HTTP/1.1\" 200 71 \"-\" \"-\"","service":"andru-assessment-api","timestamp":"2025-09-30 17:24:34"}
+{"level":"info","message":"Health check performed","responseTime":0,"service":"health-check","status":"healthy","timestamp":"2025-10-02 10:22:34"}
+{"level":"info","message":"::ffff:127.0.0.1 - - [02/Oct/2025:17:22:34 +0000] \"GET /api/health HTTP/1.1\" 200 199 \"-\" \"-\"","service":"andru-assessment-api","timestamp":"2025-10-02 10:22:34"}
+{"level":"info","message":"::ffff:127.0.0.1 - - [02/Oct/2025:17:22:34 +0000] \"GET / HTTP/1.1\" 200 71 \"-\" \"-\"","service":"andru-assessment-api","timestamp":"2025-10-02 10:22:34"}
+{"level":"info","message":"Health check performed","responseTime":0,"service":"health-check","status":"healthy","timestamp":"2025-10-03 11:51:00"}
+{"level":"info","message":"::ffff:127.0.0.1 - - [03/Oct/2025:18:51:00 +0000] \"GET /api/health HTTP/1.1\" 200 199 \"-\" \"-\"","service":"andru-assessment-api","timestamp":"2025-10-03 11:51:00"}
+{"level":"info","message":"::ffff:127.0.0.1 - - [03/Oct/2025:18:51:00 +0000] \"GET / HTTP/1.1\" 200 71 \"-\" \"-\"","service":"andru-assessment-api","timestamp":"2025-10-03 11:51:00"}
+{"level":"info","message":"Andru Assessment API server running on port 3001","service":"andru-assessment-api","timestamp":"2025-10-03 11:58:47"}
+{"level":"info","message":"Environment: production","service":"andru-assessment-api","timestamp":"2025-10-03 11:58:47"}
+{"level":"info","message":"Health check performed","responseTime":0,"service":"health-check","status":"healthy","timestamp":"2025-10-03 11:58:54"}
+{"level":"info","message":"::1 - - [03/Oct/2025:18:58:54 +0000] \"GET /api/health HTTP/1.1\" 200 205 \"-\" \"curl/8.7.1\"","service":"andru-assessment-api","timestamp":"2025-10-03 11:58:54"}
