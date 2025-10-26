@@ -10,7 +10,7 @@ export class AssessmentController {
 
     try {
       // Parse and validate request body
-      const validatedData = validationService.validate(req.body, validationService.validateAssessmentStart);
+      const validatedData = validationService.validate(req.body, validationService.validateAssessmentStart.bind(validationService));
       sessionId = validatedData.sessionId;
 
       // Log assessment start
@@ -32,8 +32,7 @@ export class AssessmentController {
             {
               fields: {
                 'Session ID': validatedData.sessionId,
-                'Assessment Started': validatedData.startTime,
-                'Status': 'In Progress'
+                'Assessment Started': validatedData.startTime
               },
             },
           ],
@@ -89,7 +88,7 @@ export class AssessmentController {
 
     try {
       // Parse and validate request body
-      const validatedData = validationService.validate(req.body, validationService.validateAssessmentSubmission);
+      const validatedData = validationService.validate(req.body, validationService.validateAssessmentSubmission.bind(validationService));
       sessionId = validatedData.sessionId;
 
       // Log assessment submission start

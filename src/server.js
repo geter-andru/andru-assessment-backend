@@ -11,6 +11,7 @@ import dotenv from 'dotenv';
 import assessmentRoutes from './routes/assessment.js';
 import healthRoutes from './routes/health.js';
 import welcomeRoutes from './routes/welcome.js';
+import insightRoutes from './routes/insights.js';
 
 // Import middleware
 import errorHandler from './middleware/errorHandler.js';
@@ -51,6 +52,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/api/assessment', assessmentRoutes);
 app.use('/api/health', healthRoutes);
 app.use('/api/welcome', welcomeRoutes);
+app.use('/api/insights', insightRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {
