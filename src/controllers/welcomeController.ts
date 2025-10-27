@@ -24,12 +24,12 @@ export class WelcomeController {
         throw new ExternalServiceError('Failed to fetch assessment data from Airtable', 'airtable');
       }
       
-      const data = await response.json();
-      
+      const data = await response.json() as { records: Array<{ fields: any }> };
+
       if (!data.records || data.records.length === 0) {
         throw new NotFoundError('Assessment not found');
       }
-      
+
       const record = data.records[0];
       const fields = record.fields;
       
@@ -65,7 +65,7 @@ export class WelcomeController {
         });
         
         if (customerResponse.ok) {
-          const customerData = await customerResponse.json();
+          const customerData = await customerResponse.json() as { records: Array<{ fields: any }> };
           if (customerData.records && customerData.records.length > 0) {
             accessToken = customerData.records[0].fields['Access Token'];
           }

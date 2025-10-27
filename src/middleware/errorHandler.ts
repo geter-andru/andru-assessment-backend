@@ -1,6 +1,9 @@
 import { logger } from '../utils/logger.js';
 
 export class ValidationError extends Error {
+  field: string | null;
+  statusCode: number;
+
   constructor(message, field = null) {
     super(message);
     this.name = 'ValidationError';
@@ -10,6 +13,8 @@ export class ValidationError extends Error {
 }
 
 export class AuthenticationError extends Error {
+  statusCode: number;
+
   constructor(message = 'Authentication required') {
     super(message);
     this.name = 'AuthenticationError';
@@ -18,6 +23,8 @@ export class AuthenticationError extends Error {
 }
 
 export class AuthorizationError extends Error {
+  statusCode: number;
+
   constructor(message = 'Insufficient permissions') {
     super(message);
     this.name = 'AuthorizationError';
@@ -26,6 +33,8 @@ export class AuthorizationError extends Error {
 }
 
 export class NotFoundError extends Error {
+  statusCode: number;
+
   constructor(message = 'Resource not found') {
     super(message);
     this.name = 'NotFoundError';
@@ -34,6 +43,8 @@ export class NotFoundError extends Error {
 }
 
 export class ConflictError extends Error {
+  statusCode: number;
+
   constructor(message = 'Resource conflict') {
     super(message);
     this.name = 'ConflictError';
@@ -42,6 +53,8 @@ export class ConflictError extends Error {
 }
 
 export class RateLimitError extends Error {
+  statusCode: number;
+
   constructor(message = 'Rate limit exceeded') {
     super(message);
     this.name = 'RateLimitError';
@@ -50,6 +63,9 @@ export class RateLimitError extends Error {
 }
 
 export class ExternalServiceError extends Error {
+  service: string | null;
+  statusCode: number;
+
   constructor(message = 'External service error', service = null) {
     super(message);
     this.name = 'ExternalServiceError';

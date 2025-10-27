@@ -6,6 +6,7 @@ export class HealthController {
     
     try {
       // Basic health check
+      const responseTime = Date.now() - startTime;
       const healthStatus = {
         status: 'healthy',
         timestamp: new Date().toISOString(),
@@ -16,11 +17,9 @@ export class HealthController {
           total: process.memoryUsage().heapTotal,
           external: process.memoryUsage().external
         },
-        environment: process.env.NODE_ENV || 'development'
+        environment: process.env.NODE_ENV || 'development',
+        responseTime: responseTime
       };
-
-      const responseTime = Date.now() - startTime;
-      healthStatus.responseTime = responseTime;
       
       // Log health check
       logger.info('Health check performed', {

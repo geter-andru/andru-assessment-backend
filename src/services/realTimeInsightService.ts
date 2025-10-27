@@ -19,6 +19,8 @@ const MODEL = 'claude-3-5-sonnet-20241022';
  * Handles AI-powered insight generation for assessment batches
  */
 class RealTimeInsightService {
+  apiKey: string | undefined;
+
   constructor() {
     this.apiKey = ANTHROPIC_API_KEY;
 
@@ -111,7 +113,7 @@ Respond with valid JSON only (no markdown, no code blocks):
       throw new Error(`ClaudeAI API error (${response.status}): ${errorText}`);
     }
 
-    const result = await response.json();
+    const result = await response.json() as { content: Array<{ text: string }> };
 
     if (!result.content || !result.content[0] || !result.content[0].text) {
       throw new Error('Invalid response from ClaudeAI API');

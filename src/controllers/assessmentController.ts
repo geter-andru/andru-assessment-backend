@@ -51,7 +51,7 @@ export class AssessmentController {
         throw new ExternalServiceError('Failed to create session record', 'airtable');
       }
 
-      const result = await airtableResponse.json();
+      const result = await airtableResponse.json() as { records: Array<{ id: string }> };
       const duration = Date.now() - startTime;
 
       // Log successful completion
@@ -145,7 +145,7 @@ export class AssessmentController {
         throw new ExternalServiceError('Failed to submit assessment to Airtable', 'airtable');
       }
 
-      const result = await airtableResponse.json();
+      const result = await airtableResponse.json() as { records: Array<{ id: string }> };
       const duration = Date.now() - startTime;
 
       // Log successful completion

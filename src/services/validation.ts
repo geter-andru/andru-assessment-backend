@@ -1,31 +1,16 @@
 // Comprehensive input validation service
 // =====================================
 
-import { ValidationError } from './errorHandler';
+import { ValidationError } from '../middleware/errorHandler.js';
 
 // Basic validation schemas without external dependencies
 // =====================================================
 
-export interface ValidationResult<T = any> {
-  success: boolean;
-  data?: T;
-  errors?: string[];
-}
-
 export class ValidationService {
-  private static instance: ValidationService;
-
-  private constructor() {}
-
-  public static getInstance(): ValidationService {
-    if (!ValidationService.instance) {
-      ValidationService.instance = new ValidationService();
-    }
-    return ValidationService.instance;
-  }
+  constructor() {}
 
   // Session ID validation
-  public validateSessionId(sessionId: any): ValidationResult<string> {
+  validateSessionId(sessionId) {
     if (!sessionId || typeof sessionId !== 'string') {
       return {
         success: false,
@@ -55,7 +40,7 @@ export class ValidationService {
   }
 
   // ISO Date validation
-  public validateISODate(dateString: any): ValidationResult<string> {
+  validateISODate(dateString) {
     if (!dateString || typeof dateString !== 'string') {
       return {
         success: false,
@@ -86,7 +71,7 @@ export class ValidationService {
   }
 
   // Email validation
-  public validateEmail(email: any): ValidationResult<string> {
+  validateEmail(email) {
     if (!email || typeof email !== 'string') {
       return {
         success: false,
@@ -116,7 +101,7 @@ export class ValidationService {
   }
 
   // Score validation (0-100)
-  public validateScore(score: any, fieldName: string = 'Score'): ValidationResult<number> {
+  validateScore(score, fieldName = 'Score') {
     if (typeof score !== 'number') {
       return {
         success: false,
@@ -145,7 +130,7 @@ export class ValidationService {
   }
 
   // String validation with length limits
-  public validateString(value: any, fieldName: string, minLength: number = 1, maxLength: number = 1000): ValidationResult<string> {
+  validateString(value, fieldName, minLength = 1, maxLength = 1000) {
     if (!value || typeof value !== 'string') {
       return {
         success: false,
@@ -175,7 +160,7 @@ export class ValidationService {
   }
 
   // Object validation
-  public validateObject(value: any, fieldName: string): ValidationResult<Record<string, any>> {
+  validateObject(value, fieldName) {
     if (!value || typeof value !== 'object' || Array.isArray(value)) {
       return {
         success: false,
@@ -190,11 +175,8 @@ export class ValidationService {
   }
 
   // Assessment Start Request Validation
-  public validateAssessmentStart(data: any): ValidationResult<{
-    sessionId: string;
-    startTime: string;
-  }> {
-    const errors: string[] = [];
+  validateAssessmentStart(data) {
+    const errors = [];
 
     // Validate sessionId
     const sessionIdResult = this.validateSessionId(data?.sessionId);
@@ -218,19 +200,14 @@ export class ValidationService {
     return {
       success: true,
       data: {
-        sessionId: sessionIdResult.data!,
-        startTime: startTimeResult.data!
+        sessionId: sessionIdResult.data,
+        startTime: startTimeResult.data
       }
     };
   }
 
   // User Info Validation
-  public validateUserInfo(userInfo: any): ValidationResult<{
-    name?: string;
-    email: string;
-    company: string;
-    role?: string;
-  }> {
+  validateUserInfo(userInfo) {
     if (!userInfo) {
       return {
         success: false,
@@ -238,7 +215,7 @@ export class ValidationService {
       };
     }
 
-    const errors: string[] = [];
+    const errors = [];
 
     // Validate email (required)
     const emailResult = this.validateEmail(userInfo.email);
@@ -253,7 +230,7 @@ export class ValidationService {
     }
 
     // Validate name (optional)
-    let name: string | undefined;
+    let name;
     if (userInfo.name) {
       const nameResult = this.validateString(userInfo.name, 'Name', 1, 100);
       if (!nameResult.success) {
@@ -264,7 +241,7 @@ export class ValidationService {
     }
 
     // Validate role (optional)
-    let role: string | undefined;
+    let role;
     if (userInfo.role) {
       const roleResult = this.validateString(userInfo.role, 'Role', 1, 100);
       if (!roleResult.success) {
@@ -285,23 +262,15 @@ export class ValidationService {
       success: true,
       data: {
         name,
-        email: emailResult.data!,
-        company: companyResult.data!,
+        email: emailResult.data,
+        company: companyResult.data,
         role
       }
     };
   }
 
   // Product Info Validation
-  public validateProductInfo(productInfo: any): ValidationResult<{
-    productName: string;
-    productDescription: string;
-    keyFeatures: string;
-    idealCustomerDescription: string;
-    businessModel: string;
-    customerCount: string;
-    distinguishingFeature: string;
-  }> {
+  validateProductInfo(productInfo) {
     if (!productInfo) {
       return {
         success: false,
@@ -309,7 +278,7 @@ export class ValidationService {
       };
     }
 
-    const errors: string[] = [];
+    const errors = [];
 
     // Validate all required fields
     const fields = [
@@ -322,7 +291,7 @@ export class ValidationService {
       { key: 'distinguishingFeature', name: 'Distinguishing Feature', maxLength: 500 }
     ];
 
-    const validatedData: any = {};
+    const validatedData = {};
 
     for (const field of fields) {
       const result = this.validateString(productInfo[field.key], field.name, 1, field.maxLength);
@@ -347,12 +316,7 @@ export class ValidationService {
   }
 
   // Assessment Results Validation
-  public validateAssessmentResults(results: any): ValidationResult<{
-    buyerScore: number;
-    techScore: number;
-    overallScore: number;
-    qualification: string;
-  }> {
+  validateAssessmentResults(results) {
     if (!results) {
       return {
         success: false,
@@ -360,7 +324,7 @@ export class ValidationService {
       };
     }
 
-    const errors: string[] = [];
+    const errors = [];
 
     // Validate scores
     const buyerScoreResult = this.validateScore(results.buyerScore, 'Buyer Score');
@@ -394,48 +358,17 @@ export class ValidationService {
     return {
       success: true,
       data: {
-        buyerScore: buyerScoreResult.data!,
-        techScore: techScoreResult.data!,
-        overallScore: overallScoreResult.data!,
-        qualification: qualificationResult.data!
+        buyerScore: buyerScoreResult.data,
+        techScore: techScoreResult.data,
+        overallScore: overallScoreResult.data,
+        qualification: qualificationResult.data
       }
     };
   }
 
   // Assessment Submission Validation
-  public validateAssessmentSubmission(data: any): ValidationResult<{
-    sessionId: string;
-    responses: Record<string, number>;
-    results: {
-      buyerScore: number;
-      techScore: number;
-      overallScore: number;
-      qualification: string;
-    };
-    timestamp: string;
-    userInfo?: {
-      name?: string;
-      email: string;
-      company: string;
-      role?: string;
-    };
-    productInfo?: {
-      productName: string;
-      productDescription: string;
-      keyFeatures: string;
-      idealCustomerDescription: string;
-      businessModel: string;
-      customerCount: string;
-      distinguishingFeature: string;
-    };
-    questionTimings?: Record<string, number>;
-    generatedContent?: {
-      icpGenerated?: string;
-      tbpGenerated?: string;
-      buyerGap?: number;
-    };
-  }> {
-    const errors: string[] = [];
+  validateAssessmentSubmission(data) {
+    const errors = [];
 
     // Validate sessionId
     const sessionIdResult = this.validateSessionId(data?.sessionId);
@@ -462,7 +395,7 @@ export class ValidationService {
     }
 
     // Validate optional userInfo
-    let userInfo: any = undefined;
+    let userInfo;
     if (data?.userInfo) {
       const userInfoResult = this.validateUserInfo(data.userInfo);
       if (!userInfoResult.success) {
@@ -473,7 +406,7 @@ export class ValidationService {
     }
 
     // Validate optional productInfo
-    let productInfo: any = undefined;
+    let productInfo;
     if (data?.productInfo) {
       const productInfoResult = this.validateProductInfo(data.productInfo);
       if (!productInfoResult.success) {
@@ -484,7 +417,7 @@ export class ValidationService {
     }
 
     // Validate optional questionTimings
-    let questionTimings: any = undefined;
+    let questionTimings;
     if (data?.questionTimings) {
       const questionTimingsResult = this.validateObject(data.questionTimings, 'Question Timings');
       if (!questionTimingsResult.success) {
@@ -495,7 +428,7 @@ export class ValidationService {
     }
 
     // Validate optional generatedContent
-    let generatedContent: any = undefined;
+    let generatedContent;
     if (data?.generatedContent) {
       const generatedContentResult = this.validateObject(data.generatedContent, 'Generated Content');
       if (!generatedContentResult.success) {
@@ -515,10 +448,10 @@ export class ValidationService {
     return {
       success: true,
       data: {
-        sessionId: sessionIdResult.data!,
-        responses: responsesResult.data!,
-        results: resultsResult.data!,
-        timestamp: timestampResult.data!,
+        sessionId: sessionIdResult.data,
+        responses: responsesResult.data,
+        results: resultsResult.data,
+        timestamp: timestampResult.data,
         userInfo,
         productInfo,
         questionTimings,
@@ -528,26 +461,16 @@ export class ValidationService {
   }
 
   // Generic validation wrapper
-  public validate<T>(data: any, validator: (data: any) => ValidationResult<T>): T {
+  validate(data, validator) {
     const result = validator(data);
     if (!result.success) {
       throw new ValidationError(
-        `Validation failed: ${result.errors?.join(', ')}`,
-        { errors: result.errors, data }
+        `Validation failed: ${result.errors?.join(', ')}`
       );
     }
-    return result.data!;
+    return result.data;
   }
 }
 
 // Export singleton instance
-export const validationService = ValidationService.getInstance();
-
-// Convenience functions
-export const validateAssessmentStart = (data: any) => validationService.validateAssessmentStart(data);
-export const validateAssessmentSubmission = (data: any) => validationService.validateAssessmentSubmission(data);
-export const validateUserInfo = (data: any) => validationService.validateUserInfo(data);
-export const validateProductInfo = (data: any) => validationService.validateProductInfo(data);
-export const validateSessionId = (data: any) => validationService.validateSessionId(data);
-export const validateEmail = (data: any) => validationService.validateEmail(data);
-export const validateScore = (data: any, fieldName?: string) => validationService.validateScore(data, fieldName);
+export const validationService = new ValidationService();
