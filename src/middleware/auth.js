@@ -8,11 +8,17 @@ import { createClient } from '@supabase/supabase-js';
 import { config } from '../config/index.js';
 import logger from '../utils/logger.js';
 
-// Initialize Supabase client with service role
-const supabase = createClient(
-  config.supabase.url,
-  config.supabase.serviceRoleKey
-);
+// Lazy-initialize Supabase client only when needed
+let supabase = null;
+function getSupabaseClient() {
+  if (!supabase && config.supabase?.url && config.supabase?.serviceRoleKey) {
+    supabase = createClient(
+      config.supabase.url,
+      config.supabase.serviceRoleKey
+    );
+  }
+  return supabase;
+}
 
 /**
  * Middleware to require authentication
@@ -21,6 +27,17 @@ const supabase = createClient(
  */
 export const requireAuth = async (req, res, next) => {
   try {
+    const supabaseClient = getSupabaseClient();
+
+    if (!supabaseClient) {
+      logger.error('Supabase not configured', { path: req.path });
+      return res.status(500).json({
+        success: false,
+        error: 'Internal Server Error',
+        message: 'Authentication service not configured'
+      });
+    }
+
     // Extract token from Authorization header
     const authHeader = req.headers.authorization;
 
@@ -39,7 +56,7 @@ export const requireAuth = async (req, res, next) => {
     const token = authHeader.replace('Bearer ', '');
 
     // Validate token with Supabase Auth
-    const { data: { user }, error } = await supabase.auth.getUser(token);
+    const { data: { user }, error } = await supabaseClient.auth.getUser(token);
 
     if (error || !user) {
       logger.warn('Invalid or expired token', {
@@ -88,6 +105,13 @@ export const requireAuth = async (req, res, next) => {
  */
 export const optionalAuth = async (req, res, next) => {
   try {
+    const supabaseClient = getSupabaseClient();
+
+    if (!supabaseClient) {
+      // Supabase not configured, continue without auth
+      return next();
+    }
+
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -96,7 +120,7 @@ export const optionalAuth = async (req, res, next) => {
     }
 
     const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error } = await supabase.auth.getUser(token);
+    const { data: { user }, error } = await supabaseClient.auth.getUser(token);
 
     if (!error && user) {
       req.user = {
