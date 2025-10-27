@@ -28,8 +28,8 @@ export class ConfigService {
       NEXT_PUBLIC_AIRTABLE_BASE_ID: process.env.NEXT_PUBLIC_AIRTABLE_BASE_ID,
       REACT_APP_AIRTABLE_BASE_ID: process.env.REACT_APP_AIRTABLE_BASE_ID,
       REACT_APP_AIRTABLE_API_KEY: process.env.REACT_APP_AIRTABLE_API_KEY,
-      NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      SUPABASE_URL: process.env.SUPABASE_URL,
+      SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
       MODERN_PLATFORM_API_URL: process.env.MODERN_PLATFORM_API_URL || 'http://localhost:3000',
       MODERN_PLATFORM_API_KEY: process.env.MODERN_PLATFORM_API_KEY,
       NEXT_PUBLIC_PLATFORM_URL: process.env.NEXT_PUBLIC_PLATFORM_URL || 'http://localhost:3000',
@@ -128,7 +128,7 @@ export class ConfigService {
       case 'airtable':
         return 'https://api.airtable.com';
       case 'supabase':
-        return this.config.NEXT_PUBLIC_SUPABASE_URL || '';
+        return this.config.SUPABASE_URL || '';
       case 'modern-platform':
         return this.config.MODERN_PLATFORM_API_URL || 'http://localhost:3000';
       case 'make':
@@ -145,7 +145,7 @@ export class ConfigService {
       case 'airtable':
         return this.config.NEXT_PUBLIC_AIRTABLE_API_KEY || '';
       case 'supabase':
-        return this.config.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+        return this.config.SUPABASE_ANON_KEY || '';
       case 'modern-platform':
         return this.config.MODERN_PLATFORM_API_KEY || '';
       default:

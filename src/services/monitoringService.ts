@@ -239,8 +239,8 @@ export class MonitoringService {
   }
 
   private async checkSupabaseHealth(): Promise<boolean> {
-    const url = configService.getOptional('NEXT_PUBLIC_SUPABASE_URL');
-    const key = configService.getOptional('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+    const url = configService.getOptional('SUPABASE_URL');
+    const key = configService.getOptional('SUPABASE_ANON_KEY');
     
     if (!url || !key) {
       throw new Error('Supabase configuration missing');

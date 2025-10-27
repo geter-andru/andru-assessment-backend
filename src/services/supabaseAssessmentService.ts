@@ -61,8 +61,8 @@ interface RedirectResult {
 }
 
 // Supabase configuration - use environment variables
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
 
 // Create Supabase client if credentials are available
 let supabase: SupabaseClient | null = null;
