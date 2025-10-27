@@ -180,6 +180,60 @@ export class SupabaseAssessmentService {
       return { connected: false, error: error.message };
     }
   }
+
+  /**
+   * Generate a JWT token for claiming an assessment
+   * @param {string} sessionId - Assessment session ID
+   * @returns {Promise<{success: boolean, token?: string, error?: string}>}
+   */
+  async generateAssessmentToken(sessionId) {
+    if (!this.isEnabled) {
+      return { success: false, error: 'supabase_not_configured' };
+    }
+
+    try {
+      // Verify assessment exists
+      const { data: assessment, error: fetchError } = await supabase
+        .from('assessment_sessions')
+        .select('session_id, user_email, status')
+        .eq('session_id', sessionId)
+        .single();
+
+      if (fetchError || !assessment) {
+        return { success: false, error: 'assessment_not_found' };
+      }
+
+      // Check if already claimed
+      if (assessment.status === 'linked_to_user') {
+        return { success: false, error: 'already_claimed' };
+      }
+
+      // Import jwt dynamically (ES modules)
+      const jwt = await import('jsonwebtoken');
+
+      // Generate JWT token
+      const jwtSecret = process.env.JWT_SECRET || 'your-secret-key';
+      const token = jwt.default.sign(
+        {
+          sessionId: sessionId,
+          email: assessment.user_email,
+          type: 'assessment_claim',
+          iat: Math.floor(Date.now() / 1000)
+        },
+        jwtSecret,
+        { expiresIn: '24h' }
+      );
+
+      console.log('✅ Assessment token generated for session:', sessionId);
+      return { success: true, token };
+    } catch (error) {
+      console.error('Failed to generate assessment token:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
 }
 
 export const supabaseAssessmentService = new SupabaseAssessmentService();
