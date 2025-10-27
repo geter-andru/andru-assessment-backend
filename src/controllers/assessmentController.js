@@ -1,6 +1,7 @@
 import { validationService } from '../services/validation.js';
 import { logger } from '../utils/logger.js';
 import { ValidationError, ExternalServiceError } from '../middleware/errorHandler.js';
+import { supabaseAssessmentService } from '../services/supabaseAssessmentService.js';
 
 export class AssessmentController {
   // Start assessment endpoint
@@ -169,6 +170,144 @@ export class AssessmentController {
         sessionId,
         service: 'assessment',
         operation: 'submit',
+        error: error.message,
+        duration
+      });
+
+      next(error);
+    }
+  }
+
+  // Generate assessment token for claiming
+  static async generateToken(req, res, next) {
+    const startTime = Date.now();
+    let sessionId;
+
+    try {
+      // Validate request body
+      const { sessionId: reqSessionId } = req.body;
+
+      if (!reqSessionId) {
+        throw new ValidationError('Session ID is required');
+      }
+
+      sessionId = reqSessionId;
+
+      logger.info('Generating assessment token', {
+        sessionId,
+        clientIP: req.ip
+      });
+
+      // Generate token using supabase service
+      const result = await supabaseAssessmentService.generateAssessmentToken(sessionId);
+
+      if (!result.success) {
+        if (result.error === 'assessment_not_found') {
+          throw new ValidationError('Assessment not found');
+        }
+        if (result.error === 'already_claimed') {
+          throw new ValidationError('Assessment already claimed');
+        }
+        throw new ExternalServiceError(result.error || 'Failed to generate token', 'supabase');
+      }
+
+      const duration = Date.now() - startTime;
+
+      logger.info('Assessment token generated successfully', {
+        sessionId,
+        duration,
+        service: 'assessment',
+        operation: 'generate_token'
+      });
+
+      res.json({
+        success: true,
+        token: result.token,
+        message: 'Assessment token generated successfully'
+      });
+
+    } catch (error) {
+      const duration = Date.now() - startTime;
+
+      logger.error('Token generation failed', {
+        sessionId,
+        service: 'assessment',
+        operation: 'generate_token',
+        error: error.message,
+        duration
+      });
+
+      next(error);
+    }
+  }
+
+  // Claim assessment with token (requires authentication)
+  static async claimAssessment(req, res, next) {
+    const startTime = Date.now();
+    let token;
+
+    try {
+      // User must be authenticated (req.user attached by auth middleware)
+      if (!req.user) {
+        throw new ValidationError('Authentication required');
+      }
+
+      // Validate request body
+      const { token: reqToken } = req.body;
+
+      if (!reqToken) {
+        throw new ValidationError('Token is required');
+      }
+
+      token = reqToken;
+      const userId = req.user.id;
+
+      logger.info('Claiming assessment', {
+        userId,
+        userEmail: req.user.email,
+        clientIP: req.ip
+      });
+
+      // Claim assessment using supabase service
+      const result = await supabaseAssessmentService.claimAssessmentByToken(token, userId);
+
+      if (!result.success) {
+        if (result.error === 'invalid_or_expired_token') {
+          throw new ValidationError('Invalid or expired token');
+        }
+        if (result.error === 'assessment_not_found') {
+          throw new ValidationError('Assessment not found');
+        }
+        if (result.error === 'already_claimed') {
+          throw new ValidationError('Assessment already claimed');
+        }
+        throw new ExternalServiceError(result.error || 'Failed to claim assessment', 'supabase');
+      }
+
+      const duration = Date.now() - startTime;
+
+      logger.info('Assessment claimed successfully', {
+        userId,
+        userEmail: req.user.email,
+        sessionId: result.assessment.session_id,
+        duration,
+        service: 'assessment',
+        operation: 'claim'
+      });
+
+      res.json({
+        success: true,
+        assessment: result.assessment,
+        message: 'Assessment claimed successfully'
+      });
+
+    } catch (error) {
+      const duration = Date.now() - startTime;
+
+      logger.error('Assessment claim failed', {
+        userId: req.user?.id,
+        service: 'assessment',
+        operation: 'claim',
         error: error.message,
         duration
       });
