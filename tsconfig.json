@@ -43,11 +43,6 @@
     "dist",
     "**/*.test.ts",
     "**/*.test.js",
-    "**/__tests__/**",
-    "src/.ts-backup/**",
-    "src/services/webhookService.ts",
-    "src/services/realTimeInsightService.ts",
-    "src/services/webResearchService.ts",
-    "src/services/airtableService.ts"
+    "**/__tests__/**"
   ]
 }
