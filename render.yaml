@@ -1,0 +1,37 @@
+services:
+  - type: web
+    name: hs-andru-test
+    env: node
+    region: oregon
+    plan: free
+    branch: main
+    # CRITICAL: Root directory must be repo root (.) not src/
+    # TypeScript compiles src/ -> dist/ at repo root level
+    rootDir: .
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: JWT_SECRET
+        sync: false  # Set manually in Render dashboard
+      - key: AIRTABLE_API_KEY
+        sync: false  # Set manually in Render dashboard
+      - key: AIRTABLE_BASE_ID
+        sync: false  # Set manually in Render dashboard
+      - key: AIRTABLE_TABLE_NAME
+        value: Assessment Results
+      - key: CORS_ORIGIN
+        value: "*"
+      - key: ANTHROPIC_API_KEY
+        sync: false  # Set manually in Render dashboard
+      - key: SUPABASE_URL
+        sync: false  # Set manually in Render dashboard
+      - key: SUPABASE_ANON_KEY
+        sync: false  # Set manually in Render dashboard
+      - key: NEXT_PUBLIC_PLATFORM_URL
+        value: http://localhost:3000
