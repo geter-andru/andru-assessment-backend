@@ -88,38 +88,65 @@ Respond with valid JSON only (no markdown, no code blocks):
       throw new Error('ClaudeAI API key not configured');
     }
 
-    const response = await fetch(ANTHROPIC_API_URL, {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'x-api-key': this.apiKey,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        max_tokens: 800,
-        temperature: 0.7,
-        messages: [
-          {
-            role: 'user',
-            content: prompt
-          }
-        ]
-      })
-    });
+    // Add timeout using AbortController (30 seconds)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`ClaudeAI API error (${response.status}): ${errorText}`);
+    try {
+      console.log(`📡 Calling Anthropic API (model: ${MODEL})...`);
+
+      const response = await fetch(ANTHROPIC_API_URL, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-api-key': this.apiKey,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: MODEL,
+          max_tokens: 800,
+          temperature: 0.7,
+          messages: [
+            {
+              role: 'user',
+              content: prompt
+            }
+          ]
+        }),
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+
+      console.log(`📡 Anthropic API response status: ${response.status}`);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`❌ Anthropic API error (${response.status}):`, errorText);
+        throw new Error(`ClaudeAI API error (${response.status}): ${errorText}`);
+      }
+
+      const result = await response.json() as { content: Array<{ text: string }> };
+
+      if (!result.content || !result.content[0] || !result.content[0].text) {
+        console.error('❌ Invalid response structure from Anthropic API:', result);
+        throw new Error('Invalid response from ClaudeAI API');
+      }
+
+      console.log('✅ Anthropic API call successful');
+      return result.content[0].text;
+
+    } catch (error) {
+      clearTimeout(timeoutId);
+
+      if (error.name === 'AbortError') {
+        console.error('❌ Anthropic API call timed out after 30 seconds');
+        throw new Error('Anthropic API call timed out after 30 seconds');
+      }
+
+      console.error('❌ Anthropic API call failed:', error);
+      throw error;
     }
-
-    const result = await response.json() as { content: Array<{ text: string }> };
-
-    if (!result.content || !result.content[0] || !result.content[0].text) {
-      throw new Error('Invalid response from ClaudeAI API');
-    }
-
-    return result.content[0].text;
   }
 
   /**
