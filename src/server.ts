@@ -1,24 +1,26 @@
-import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import compression from 'compression';
-import morgan from 'morgan';
-import rateLimit from 'express-rate-limit';
-import 'express-async-errors';
+// Load environment variables FIRST - ES module compatible approach
 import dotenv from 'dotenv';
+dotenv.config();
 
-// Import routes
-import assessmentRoutes from './routes/assessment.js';
-import healthRoutes from './routes/health.js';
-import welcomeRoutes from './routes/welcome.js';
-import insightRoutes from './routes/insights.js';
+// CRITICAL: All route imports must come AFTER dotenv.config()
+// Dynamic imports prevent hoisting
+const express = (await import('express')).default;
+const cors = (await import('cors')).default;
+const helmet = (await import('helmet')).default;
+const compression = (await import('compression')).default;
+const morgan = (await import('morgan')).default;
+const rateLimit = (await import('express-rate-limit')).default;
+await import('express-async-errors');
+
+// Import routes AFTER dotenv is loaded
+const assessmentRoutes = (await import('./routes/assessment.js')).default;
+const healthRoutes = (await import('./routes/health.js')).default;
+const welcomeRoutes = (await import('./routes/welcome.js')).default;
+const insightRoutes = (await import('./routes/insights.js')).default;
 
 // Import middleware
-import errorHandler from './middleware/errorHandler.js';
-import { logger } from './utils/logger.js';
-
-// Load environment variables
-dotenv.config();
+const errorHandler = (await import('./middleware/errorHandler.js')).default;
+const { logger } = await import('./utils/logger.js');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -27,9 +29,31 @@ const PORT = process.env.PORT || 3001;
 app.use(helmet());
 app.use(compression());
 
-// CORS configuration
+// CORS configuration - Allow both www and non-www variants
+const allowedOrigins = [
+  process.env.FRONTEND_URL || 'http://localhost:3000',
+  'https://andru-ai.com',
+  'https://www.andru-ai.com',
+  'http://localhost:3002'
+];
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, curl, Postman)
+    if (!origin) return callback(null, true);
+
+    // Check if origin is in allowed list (with or without trailing slash)
+    const originWithoutSlash = origin.replace(/\/$/, '');
+    const isAllowed = allowedOrigins.some(allowed =>
+      allowed.replace(/\/$/, '') === originWithoutSlash
+    );
+
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 
