@@ -156,9 +156,55 @@ export class AssessmentController {
         overallScore: validatedData.results.overallScore,
         qualification: validatedData.results.qualification
       });
-      
-      res.json({ 
-        success: true, 
+
+      // ✅ DUAL STORAGE: Also store in Supabase for modern-platform integration
+      // This is non-fatal - Airtable is primary source of truth
+      if (supabaseAssessmentService.isConfigured()) {
+        try {
+          logger.info('Storing assessment in Supabase for platform integration', {
+            sessionId,
+            email: validatedData.userInfo?.email
+          });
+
+          const supabaseResult = await supabaseAssessmentService.storeCompletedAssessment(
+            {
+              sessionId: validatedData.sessionId,
+              responses: validatedData.responses,
+              results: validatedData.results,
+              timestamp: validatedData.timestamp,
+              productInfo: validatedData.productInfo,
+              questionTimings: validatedData.questionTimings,
+              generatedContent: validatedData.generatedContent
+            },
+            validatedData.userInfo || {}
+          );
+
+          if (supabaseResult.success) {
+            logger.info('✅ Assessment stored in Supabase', {
+              sessionId,
+              assessmentId: supabaseResult.assessmentId,
+              supabaseSessionId: supabaseResult.sessionId
+            });
+          } else {
+            logger.warn('⚠️ Supabase storage failed (non-fatal)', {
+              sessionId,
+              reason: supabaseResult.reason || supabaseResult.error
+            });
+          }
+        } catch (supabaseError) {
+          // Non-fatal: Airtable is primary, Supabase is secondary
+          logger.error('⚠️ Supabase storage error (non-fatal)', {
+            sessionId,
+            error: supabaseError instanceof Error ? supabaseError.message : 'Unknown error',
+            stack: supabaseError instanceof Error ? supabaseError.stack : undefined
+          });
+        }
+      } else {
+        logger.info('Supabase not configured, skipping secondary storage', { sessionId });
+      }
+
+      res.json({
+        success: true,
         recordId: result.records[0].id,
         sessionId: validatedData.sessionId
       });
