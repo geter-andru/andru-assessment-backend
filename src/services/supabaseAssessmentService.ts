@@ -206,7 +206,7 @@ export class SupabaseAssessmentService {
       }
 
       // Check if already claimed
-      if (assessment.status === 'linked_to_user') {
+      if (assessment.status === 'linked') {
         return { success: false, error: 'already_claimed' };
       }
 
@@ -276,7 +276,7 @@ export class SupabaseAssessmentService {
       }
 
       // Check if already claimed
-      if (assessment.status === 'linked_to_user' && assessment.user_id) {
+      if (assessment.status === 'linked' && assessment.user_id) {
         return { success: false, error: 'already_claimed' };
       }
 
@@ -285,7 +285,7 @@ export class SupabaseAssessmentService {
         .from('assessment_sessions')
         .update({
           user_id: userId,
-          status: 'linked_to_user',
+          status: 'linked',
           updated_at: new Date().toISOString()
         })
         .eq('session_id', sessionId)
