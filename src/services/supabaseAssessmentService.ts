@@ -20,22 +20,24 @@ export class SupabaseAssessmentService {
     this.isEnabled = !!supabase;
   }
 
-  // Store completed assessment for linking after user signup
-  async storeCompletedAssessment(assessmentData, userInfo) {
+  // Store started assessment (when user begins the assessment)
+  async storeStartedAssessment(sessionId, userEmail = null, companyName = null) {
     if (!this.isEnabled) {
-      console.log('Supabase not configured, assessment stored locally only');
+      console.log('Supabase not configured, assessment start not stored');
       return { success: false, reason: 'supabase_not_configured' };
     }
 
     try {
       const assessmentRecord = {
-        session_id: assessmentData.sessionId || this.generateSessionId(),
-        assessment_data: JSON.stringify(assessmentData),
-        user_email: userInfo.email,
-        company_name: userInfo.company,
-        overall_score: assessmentData.results?.overallScore || 0,
-        buyer_score: assessmentData.results?.buyerScore || 0,
-        status: 'completed_awaiting_signup',
+        session_id: sessionId,
+        status: 'started',
+        started_at: new Date().toISOString(),
+        current_step: 'intro',
+        total_steps: 14, // Standard assessment has 14 questions
+        completion_percentage: 0,
+        assessment_data: JSON.stringify({ completed_steps: [] }),
+        user_email: userEmail,
+        company_name: companyName,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
@@ -50,17 +52,118 @@ export class SupabaseAssessmentService {
         throw error;
       }
 
-      console.log('✅ Assessment stored in Supabase:', data.id);
-      return { 
-        success: true, 
+      console.log('✅ Assessment started in Supabase:', data.id);
+      return {
+        success: true,
         assessmentId: data.id,
-        sessionId: data.session_id 
+        sessionId: data.session_id
+      };
+    } catch (error) {
+      console.error('Failed to store started assessment in Supabase:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  // Store completed assessment for linking after user signup
+  async storeCompletedAssessment(assessmentData, userInfo) {
+    if (!this.isEnabled) {
+      console.log('Supabase not configured, assessment stored locally only');
+      return { success: false, reason: 'supabase_not_configured' };
+    }
+
+    try {
+      const sessionId = assessmentData.sessionId || this.generateSessionId();
+
+      // Check if a "started" row already exists for this session
+      const { data: existing, error: checkError } = await supabase
+        .from('assessment_sessions')
+        .select('id, status')
+        .eq('session_id', sessionId)
+        .maybeSingle();
+
+      if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = no rows found
+        throw checkError;
+      }
+
+      let result;
+
+      if (existing && existing.status === 'started') {
+        // UPDATE existing "started" row to "completed"
+        console.log('Updating existing started assessment to completed:', existing.id);
+
+        const updateData = {
+          assessment_data: JSON.stringify(assessmentData),
+          user_email: userInfo.email,
+          company_name: userInfo.company,
+          overall_score: assessmentData.results?.overallScore || 0,
+          buyer_score: assessmentData.results?.buyerScore || 0,
+          status: 'completed_awaiting_signup',
+          completed_at: new Date().toISOString(),
+          completion_percentage: 100,
+          current_step: 'finished',
+          updated_at: new Date().toISOString()
+        };
+
+        const { data, error } = await supabase
+          .from('assessment_sessions')
+          .update(updateData)
+          .eq('session_id', sessionId)
+          .select()
+          .single();
+
+        if (error) {
+          throw error;
+        }
+
+        result = data;
+        console.log('✅ Assessment updated to completed in Supabase:', data.id);
+      } else {
+        // INSERT new row if no "started" row exists (backward compatibility)
+        console.log('No started assessment found, creating new completed assessment');
+
+        const assessmentRecord = {
+          session_id: sessionId,
+          assessment_data: JSON.stringify(assessmentData),
+          user_email: userInfo.email,
+          company_name: userInfo.company,
+          overall_score: assessmentData.results?.overallScore || 0,
+          buyer_score: assessmentData.results?.buyerScore || 0,
+          status: 'completed_awaiting_signup',
+          started_at: new Date().toISOString(), // Use same time for both if no prior start
+          completed_at: new Date().toISOString(),
+          completion_percentage: 100,
+          current_step: 'finished',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+
+        const { data, error } = await supabase
+          .from('assessment_sessions')
+          .insert(assessmentRecord)
+          .select()
+          .single();
+
+        if (error) {
+          throw error;
+        }
+
+        result = data;
+        console.log('✅ Assessment stored in Supabase:', data.id);
+      }
+
+      return {
+        success: true,
+        assessmentId: result.id,
+        sessionId: result.session_id
       };
     } catch (error) {
       console.error('Failed to store assessment in Supabase:', error);
-      return { 
-        success: false, 
-        error: error.message 
+      return {
+        success: false,
+        error: error.message
       };
     }
   }

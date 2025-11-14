@@ -52,6 +52,37 @@ export class AssessmentController {
       }
 
       const result = await airtableResponse.json() as { records: Array<{ id: string }> };
+
+      // Also store in Supabase for notifications
+      if (supabaseAssessmentService.isConfigured()) {
+        try {
+          logger.info('Storing started assessment in Supabase for notifications', {
+            sessionId
+          });
+
+          const supabaseResult = await supabaseAssessmentService.storeStartedAssessment(
+            validatedData.sessionId
+          );
+
+          if (supabaseResult.success) {
+            logger.info('✅ Started assessment stored in Supabase', {
+              sessionId,
+              assessmentId: supabaseResult.assessmentId
+            });
+          } else {
+            logger.warn('⚠️ Supabase storage for started assessment failed (non-fatal)', {
+              sessionId,
+              reason: supabaseResult.reason || supabaseResult.error
+            });
+          }
+        } catch (supabaseError) {
+          logger.error('⚠️ Supabase storage error for started assessment (non-fatal)', {
+            sessionId,
+            error: supabaseError instanceof Error ? supabaseError.message : 'Unknown error'
+          });
+        }
+      }
+
       const duration = Date.now() - startTime;
 
       // Log successful completion
@@ -60,11 +91,11 @@ export class AssessmentController {
         recordId: result.records[0].id,
         duration
       });
-      
-      res.json({ 
-        success: true, 
+
+      res.json({
+        success: true,
         sessionId: validatedData.sessionId,
-        recordId: result.records[0].id 
+        recordId: result.records[0].id
       });
       
     } catch (error) {
