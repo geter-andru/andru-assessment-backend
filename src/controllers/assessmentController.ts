@@ -21,81 +21,43 @@ export class AssessmentController {
         clientIP: req.ip
       });
 
-      // Create initial assessment record with session ID
-      const airtableResponse = await fetch(`https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/${process.env.AIRTABLE_TABLE_NAME}`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.AIRTABLE_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          records: [
-            {
-              fields: {
-                'Session ID': validatedData.sessionId,
-                'Assessment Started': validatedData.startTime
-              },
-            },
-          ],
-        }),
-      });
-
-      if (!airtableResponse.ok) {
-        const error = await airtableResponse.text();
-        logger.error('Airtable API error', {
-          sessionId,
-          service: 'airtable',
-          operation: 'create_session',
-          error
-        });
-        throw new ExternalServiceError('Failed to create session record', 'airtable');
+      // Store assessment start in Supabase (triggers notification webhook)
+      if (!supabaseAssessmentService.isConfigured()) {
+        throw new ExternalServiceError('Supabase not configured', 'supabase');
       }
 
-      const result = await airtableResponse.json() as { records: Array<{ id: string }> };
+      logger.info('📝 Storing started assessment in Supabase', {
+        sessionId
+      });
 
-      // Also store in Supabase for notifications
-      if (supabaseAssessmentService.isConfigured()) {
-        try {
-          logger.info('Storing started assessment in Supabase for notifications', {
-            sessionId
-          });
+      const supabaseResult = await supabaseAssessmentService.storeStartedAssessment(
+        validatedData.sessionId
+      );
 
-          const supabaseResult = await supabaseAssessmentService.storeStartedAssessment(
-            validatedData.sessionId
-          );
-
-          if (supabaseResult.success) {
-            logger.info('✅ Started assessment stored in Supabase', {
-              sessionId,
-              assessmentId: supabaseResult.assessmentId
-            });
-          } else {
-            logger.warn('⚠️ Supabase storage for started assessment failed (non-fatal)', {
-              sessionId,
-              reason: supabaseResult.reason || supabaseResult.error
-            });
-          }
-        } catch (supabaseError) {
-          logger.error('⚠️ Supabase storage error for started assessment (non-fatal)', {
-            sessionId,
-            error: supabaseError instanceof Error ? supabaseError.message : 'Unknown error'
-          });
-        }
+      if (!supabaseResult.success) {
+        logger.error('❌ Failed to store started assessment in Supabase', {
+          sessionId,
+          reason: supabaseResult.reason || supabaseResult.error
+        });
+        throw new ExternalServiceError(
+          supabaseResult.error || 'Failed to create assessment session record',
+          'supabase'
+        );
       }
 
       const duration = Date.now() - startTime;
 
       // Log successful completion
-      logger.info('Assessment started successfully', {
+      logger.info('✅ Assessment started successfully', {
         sessionId,
-        recordId: result.records[0].id,
+        assessmentId: supabaseResult.assessmentId,
         duration
       });
 
       res.json({
         success: true,
         sessionId: validatedData.sessionId,
-        recordId: result.records[0].id
+        recordId: supabaseResult.assessmentId
       });
       
     } catch (error) {
@@ -133,110 +95,54 @@ export class AssessmentController {
         overallScore: validatedData.results.overallScore
       });
 
-      // Prepare Airtable submission data
-      const airtableData = {
-        records: [
-          {
-            fields: {
-              'Session ID': validatedData.sessionId,
-              'Overall Score': validatedData.results.overallScore,
-              'Buyer Score': validatedData.results.buyerScore,
-              'Tech Score': validatedData.results.techScore,
-              'Qualification': validatedData.results.qualification,
-              'Responses': JSON.stringify(validatedData.responses),
-              'Timestamp': validatedData.timestamp,
-              'User Info': validatedData.userInfo ? JSON.stringify(validatedData.userInfo) : null,
-              'Product Info': validatedData.productInfo ? JSON.stringify(validatedData.productInfo) : null,
-              'Question Timings': validatedData.questionTimings ? JSON.stringify(validatedData.questionTimings) : null,
-              'Generated Content': validatedData.generatedContent ? JSON.stringify(validatedData.generatedContent) : null,
-              'Status': 'Completed'
-            },
-          },
-        ],
-      };
-
-      // Submit to Airtable
-      const airtableResponse = await fetch(`https://api.airtable.com/v0/${process.env.AIRTABLE_BASE_ID}/${process.env.AIRTABLE_TABLE_NAME}`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.AIRTABLE_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(airtableData),
-      });
-
-      if (!airtableResponse.ok) {
-        const error = await airtableResponse.text();
-        logger.error('Airtable API error', {
-          sessionId,
-          service: 'airtable',
-          operation: 'submit_assessment',
-          error
-        });
-        throw new ExternalServiceError('Failed to submit assessment to Airtable', 'airtable');
+      // Store completed assessment in Supabase (triggers notification webhook)
+      if (!supabaseAssessmentService.isConfigured()) {
+        throw new ExternalServiceError('Supabase not configured', 'supabase');
       }
 
-      const result = await airtableResponse.json() as { records: Array<{ id: string }> };
+      logger.info('📝 Storing completed assessment in Supabase', {
+        sessionId,
+        email: validatedData.userInfo?.email
+      });
+
+      const supabaseResult = await supabaseAssessmentService.storeCompletedAssessment(
+        {
+          sessionId: validatedData.sessionId,
+          responses: validatedData.responses,
+          results: validatedData.results,
+          timestamp: validatedData.timestamp,
+          productInfo: validatedData.productInfo,
+          questionTimings: validatedData.questionTimings,
+          generatedContent: validatedData.generatedContent
+        },
+        validatedData.userInfo || {}
+      );
+
+      if (!supabaseResult.success) {
+        logger.error('❌ Failed to store completed assessment in Supabase', {
+          sessionId,
+          reason: supabaseResult.reason || supabaseResult.error
+        });
+        throw new ExternalServiceError(
+          supabaseResult.error || 'Failed to store completed assessment',
+          'supabase'
+        );
+      }
+
       const duration = Date.now() - startTime;
 
       // Log successful completion
-      logger.info('Assessment submitted successfully', {
+      logger.info('✅ Assessment submitted successfully', {
         sessionId,
-        recordId: result.records[0].id,
+        assessmentId: supabaseResult.assessmentId,
         duration,
         overallScore: validatedData.results.overallScore,
         qualification: validatedData.results.qualification
       });
 
-      // ✅ DUAL STORAGE: Also store in Supabase for modern-platform integration
-      // This is non-fatal - Airtable is primary source of truth
-      if (supabaseAssessmentService.isConfigured()) {
-        try {
-          logger.info('Storing assessment in Supabase for platform integration', {
-            sessionId,
-            email: validatedData.userInfo?.email
-          });
-
-          const supabaseResult = await supabaseAssessmentService.storeCompletedAssessment(
-            {
-              sessionId: validatedData.sessionId,
-              responses: validatedData.responses,
-              results: validatedData.results,
-              timestamp: validatedData.timestamp,
-              productInfo: validatedData.productInfo,
-              questionTimings: validatedData.questionTimings,
-              generatedContent: validatedData.generatedContent
-            },
-            validatedData.userInfo || {}
-          );
-
-          if (supabaseResult.success) {
-            logger.info('✅ Assessment stored in Supabase', {
-              sessionId,
-              assessmentId: supabaseResult.assessmentId,
-              supabaseSessionId: supabaseResult.sessionId
-            });
-          } else {
-            logger.warn('⚠️ Supabase storage failed (non-fatal)', {
-              sessionId,
-              reason: supabaseResult.reason || supabaseResult.error
-            });
-          }
-        } catch (supabaseError) {
-          // Non-fatal: Airtable is primary, Supabase is secondary
-          logger.error('⚠️ Supabase storage error (non-fatal)', {
-            sessionId,
-            error: supabaseError instanceof Error ? supabaseError.message : 'Unknown error',
-            stack: supabaseError instanceof Error ? supabaseError.stack : undefined
-          });
-        }
-      } else {
-        logger.info('Supabase not configured, skipping secondary storage', { sessionId });
-      }
-
       res.json({
         success: true,
-        recordId: result.records[0].id,
+        recordId: supabaseResult.assessmentId,
         sessionId: validatedData.sessionId
       });
       
