@@ -3,12 +3,12 @@ import { createClient } from '@supabase/supabase-js';
 
 // Supabase configuration - use environment variables
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-// Create Supabase client if credentials are available
+// Create Supabase client with service role key (bypasses RLS for server-side operations)
 let supabase = null;
-if (supabaseUrl && supabaseAnonKey) {
-  supabase = createClient(supabaseUrl, supabaseAnonKey);
+if (supabaseUrl && supabaseServiceRoleKey) {
+  supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 } else {
   console.warn('Supabase credentials not found. Assessment will work in standalone mode.');
 }
