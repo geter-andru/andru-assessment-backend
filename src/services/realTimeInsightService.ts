@@ -12,7 +12,7 @@ dotenv.config();
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
-const MODEL = 'claude-3-5-sonnet-20241022';
+const MODEL = 'claude-3-opus-20240229';
 
 /**
  * Real-Time Insight Service
