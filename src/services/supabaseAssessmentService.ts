@@ -21,14 +21,14 @@ export class SupabaseAssessmentService {
   }
 
   // Store started assessment (when user begins the assessment)
-  async storeStartedAssessment(sessionId, userEmail = null, companyName = null) {
+  async storeStartedAssessment(sessionId, userEmail = null, companyName = null, productInfo = null) {
     if (!this.isEnabled) {
       console.log('Supabase not configured, assessment start not stored');
       return { success: false, reason: 'supabase_not_configured' };
     }
 
     try {
-      const assessmentRecord = {
+      const assessmentRecord: any = {
         session_id: sessionId,
         status: 'started',
         started_at: new Date().toISOString(),
@@ -41,6 +41,13 @@ export class SupabaseAssessmentService {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
+
+      // Add product details if provided
+      if (productInfo) {
+        if (productInfo.businessModel) assessmentRecord.business_model = productInfo.businessModel;
+        if (productInfo.productDescription) assessmentRecord.product_description = productInfo.productDescription;
+        if (productInfo.productName) assessmentRecord.product_name = productInfo.productName;
+      }
 
       const { data, error } = await supabase
         .from('assessment_sessions')
@@ -94,7 +101,7 @@ export class SupabaseAssessmentService {
         // UPDATE existing "started" row to "completed"
         console.log('Updating existing started assessment to completed:', existing.id);
 
-        const updateData = {
+        const updateData: any = {
           assessment_data: JSON.stringify(assessmentData),
           user_email: userInfo.email,
           company_name: userInfo.company,
@@ -106,6 +113,33 @@ export class SupabaseAssessmentService {
           current_step: 'finished',
           updated_at: new Date().toISOString()
         };
+
+        // Extract individual question responses from assessmentData.responses
+        if (assessmentData.responses) {
+          // Map question IDs to response columns
+          const questionMapping = {
+            'q1': 'q1_response',
+            'q2': 'q2_response',
+            'q3': 'q3_response',
+            'q4': 'q4_response',
+            'q5': 'q5_response',
+            'q6': 'q6_response',
+            'q7': 'q7_response',
+            'q8': 'q8_response',
+            'q9': 'q9_response',
+            'q10': 'q10_response',
+            'q11': 'q11_response',
+            'q12': 'q12_response',
+            'q13': 'q13_response',
+            'q14': 'q14_response'
+          };
+
+          Object.entries(questionMapping).forEach(([qId, colName]) => {
+            if (assessmentData.responses[qId] !== undefined) {
+              updateData[colName] = assessmentData.responses[qId];
+            }
+          });
+        }
 
         const { data, error } = await supabase
           .from('assessment_sessions')
@@ -124,7 +158,7 @@ export class SupabaseAssessmentService {
         // INSERT new row if no "started" row exists (backward compatibility)
         console.log('No started assessment found, creating new completed assessment');
 
-        const assessmentRecord = {
+        const assessmentRecord: any = {
           session_id: sessionId,
           assessment_data: JSON.stringify(assessmentData),
           user_email: userInfo.email,
@@ -139,6 +173,32 @@ export class SupabaseAssessmentService {
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         };
+
+        // Extract individual question responses
+        if (assessmentData.responses) {
+          const questionMapping = {
+            'q1': 'q1_response',
+            'q2': 'q2_response',
+            'q3': 'q3_response',
+            'q4': 'q4_response',
+            'q5': 'q5_response',
+            'q6': 'q6_response',
+            'q7': 'q7_response',
+            'q8': 'q8_response',
+            'q9': 'q9_response',
+            'q10': 'q10_response',
+            'q11': 'q11_response',
+            'q12': 'q12_response',
+            'q13': 'q13_response',
+            'q14': 'q14_response'
+          };
+
+          Object.entries(questionMapping).forEach(([qId, colName]) => {
+            if (assessmentData.responses[qId] !== undefined) {
+              assessmentRecord[colName] = assessmentData.responses[qId];
+            }
+          });
+        }
 
         const { data, error } = await supabase
           .from('assessment_sessions')

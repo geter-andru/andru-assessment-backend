@@ -31,7 +31,10 @@ export class AssessmentController {
       });
 
       const supabaseResult = await supabaseAssessmentService.storeStartedAssessment(
-        validatedData.sessionId
+        validatedData.sessionId,
+        null, // userEmail - collected at end
+        null, // companyName - collected at end
+        validatedData.productInfo || null // productInfo from request
       );
 
       if (!supabaseResult.success) {
